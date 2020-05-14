@@ -18,10 +18,13 @@ public class App {
     private void demoFallback() {
         RetryPolicy<Integer> retryPolicy = new RetryPolicy<>();
         retryPolicy.withDelay(Duration.ofSeconds(1));
-        retryPolicy.withMaxAttempts(5);
+        retryPolicy.withMaxAttempts(2);
         retryPolicy.handle(RuntimeException.class);
+        retryPolicy.onRetry(e -> System.out.println("Retry : " + e.getAttemptCount()));
 
-        Fallback<Integer> fallback = Fallback.of(10);
+        Fallback<Integer> fallback = Fallback.of(() -> 10);
+        //Fallback<Integer> fallback = Fallback.of(() -> { throw new RuntimeException("Fallback failed"); } );
+        //fallback.onFailure(e -> System.out.println("Falling back :  " + e.getFailure().getMessage()));
 
         Integer val = Failsafe.with(fallback, retryPolicy).get(service::getCounterValueForFallback);
         System.out.println("Value : " + val);

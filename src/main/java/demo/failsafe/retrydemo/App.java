@@ -17,8 +17,10 @@ public class App {
     private void demoRetry() {
         RetryPolicy<Integer> retryPolicy = new RetryPolicy<>();
         retryPolicy.withDelay(Duration.ofMillis(100));
-        retryPolicy.withMaxAttempts(5);
+        retryPolicy.withMaxAttempts(3);
         retryPolicy.handle(IllegalAccessException.class);
+        retryPolicy.onFailedAttempt(e -> System.err.println("Error : " + e.getLastFailure().getMessage()));
+        //retryPolicy.onFailure(e -> System.err.println("Failure : " + e.getFailure().getMessage()));
 
         Integer val = Failsafe.with(retryPolicy).get(service::getCounterValueForRetry);
         System.out.println("Value : " + val);

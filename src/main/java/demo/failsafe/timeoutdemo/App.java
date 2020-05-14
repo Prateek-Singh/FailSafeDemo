@@ -21,9 +21,11 @@ public class App {
         retryPolicy.withDelay(Duration.ofMillis(100));
         retryPolicy.withMaxAttempts(5);
         retryPolicy.handle(TimeoutExceededException.class);
+        retryPolicy.onRetry(e -> System.out.println("Retry : " + e.getAttemptCount()));
 
         Timeout<Integer> timeout = Timeout.of(Duration.ofSeconds(1));
         timeout.withCancel(true);
+        timeout.onFailure(e -> System.err.println("Backing out after 1 second"));
 
         Integer val = Failsafe.with(retryPolicy, timeout).get(service::getCounterValueForTimeOut);
         System.out.println("Value : " + val);
