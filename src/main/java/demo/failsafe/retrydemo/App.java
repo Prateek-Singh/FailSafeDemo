@@ -22,7 +22,7 @@ public class App {
         retryPolicy.onFailedAttempt(e -> System.err.println("Error : " + e.getLastFailure().getMessage()));
         //retryPolicy.onFailure(e -> System.err.println("Failure : " + e.getFailure().getMessage()));
 
-        Integer val = Failsafe.with(retryPolicy).get(service::getCounterValueForRetry);
+        Integer val = Failsafe.with(retryPolicy).get(service::mockBehaviorForRetryPolicy);
         System.out.println("Value : " + val);
     }
 }

@@ -38,7 +38,7 @@ public class App {
             Thread.sleep(1000);
             try {
                 String id = Failsafe.with(retryPolicy, breaker)
-                        .get(service::getCounterValueForCircuitBreaker);
+                        .get(service::mockBehaviorForCircuitBreakerPolicy);
                 System.out.printf("FailsafeExample: id '%s' received at '%s'\n", id, ZonedDateTime.now());
             } catch (CircuitBreakerOpenException e) {
                 System.out.printf("circuit-breaker is open (state %s), time is '%s'\n", breaker.getState(),

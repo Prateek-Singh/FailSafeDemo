@@ -27,7 +27,7 @@ public class App {
         timeout.withCancel(true);
         timeout.onFailure(e -> System.err.println("Backing out after 1 second"));
 
-        Integer val = Failsafe.with(retryPolicy, timeout).get(service::getCounterValueForTimeOut);
+        Integer val = Failsafe.with(retryPolicy, timeout).get(service::mockBehaviorForTimeoutPolicy);
         System.out.println("Value : " + val);
     }
 }

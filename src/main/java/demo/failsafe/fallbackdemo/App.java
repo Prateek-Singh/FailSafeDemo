@@ -26,7 +26,7 @@ public class App {
         //Fallback<Integer> fallback = Fallback.of(() -> { throw new RuntimeException("Fallback failed"); } );
         //fallback.onFailure(e -> System.out.println("Falling back :  " + e.getFailure().getMessage()));
 
-        Integer val = Failsafe.with(fallback, retryPolicy).get(service::getCounterValueForFallback);
+        Integer val = Failsafe.with(fallback, retryPolicy).get(service::mockBehaviorForFallbackPolicy);
         System.out.println("Value : " + val);
     }
 }

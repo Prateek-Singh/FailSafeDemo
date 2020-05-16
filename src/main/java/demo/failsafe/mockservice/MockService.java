@@ -5,7 +5,7 @@ import java.util.UUID;
 public class MockService {
     private int ctr = 0;
 
-    public int getCounterValueForRetry() throws IllegalAccessException {
+    public int mockBehaviorForRetryPolicy() throws IllegalAccessException {
         ctr++;
         if (ctr != 3) {
             throw new IllegalAccessException("Counter is not 3");
@@ -16,7 +16,7 @@ public class MockService {
         return 3;
     }
 
-    public int getCounterValueForFallback() throws IllegalAccessException {
+    public int mockBehaviorForFallbackPolicy() throws IllegalAccessException {
         ctr++;
         if(ctr < 3) {
             throw new RuntimeException("Counter is not 3");
@@ -25,7 +25,7 @@ public class MockService {
         throw new IllegalAccessException("Counter is not returned");
     }
 
-    public int getCounterValueForTimeOut() throws InterruptedException {
+    public int mockBehaviorForTimeoutPolicy() throws InterruptedException {
         ctr++;
         if(ctr < 3) {
             Thread.sleep(10000);
@@ -36,9 +36,9 @@ public class MockService {
         return 3;
     }
 
-    public String getCounterValueForCircuitBreaker() {
+    public String mockBehaviorForCircuitBreakerPolicy() {
         ctr++;
-        if(ctr < 3) {
+        if(ctr < 3 || ctr == 5) {
             throw new RuntimeException("Counter is not 3");
         }
         return UUID.randomUUID().toString();
