@@ -1,33 +1,70 @@
 package demo.failsafe.timeoutdemo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.Duration;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import demo.failsafe.mockservice.MockService;
 import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.Timeout;
 import net.jodah.failsafe.TimeoutExceededException;
+import net.jodah.failsafe.event.ExecutionAttemptedEvent;
+import net.jodah.failsafe.event.ExecutionCompletedEvent;
+import net.jodah.failsafe.function.CheckedConsumer;
 
+@RunWith(MockitoJUnitRunner.class)
 public class App {
 
-    MockService service = new MockService();
+	private static final String EXPECTED_VALUE = "Expected Value";
+	private static final String FALLBACK_VALUE = "Fallback Value";
+	
+	private final CheckedConsumer<ExecutionAttemptedEvent<String>> printAttemptedCountAndExceptionMsg = e -> {
+		System.err.println("Timeout Demo Attempt : " + e.getAttemptCount());
+	}; 
+	
+	private final CheckedConsumer<ExecutionCompletedEvent<String>> printTimeoutExceededExceptionMsg = e -> {
+		System.err.println("Timed out with Exception : " + e.getFailure());
+	};
+	
+	@Mock
+	MockService mockService;
+	
+	@Before
+	public void setUp() {
+		mockService = () -> {
+			try {
+				Thread.sleep(200);
+//				Thread.sleep(50);
+			} catch (InterruptedException e) {
+			}
+			return EXPECTED_VALUE;
+		};
+	}
 
-    public static void main(String[] args) {
-        new App().demoTimeOut();    
-    }
-
-    private void demoTimeOut() {
-        RetryPolicy<Integer> retryPolicy = new RetryPolicy<>();
+	@Test
+    public void testTimeOut() {
+        RetryPolicy<String> retryPolicy = new RetryPolicy<>();
         retryPolicy.withDelay(Duration.ofMillis(100));
-        retryPolicy.withMaxAttempts(5);
+        retryPolicy.withMaxAttempts(3);
         retryPolicy.handle(TimeoutExceededException.class);
-        retryPolicy.onRetry(e -> System.out.println("Retry : " + e.getAttemptCount()));
+        retryPolicy.onRetry(printAttemptedCountAndExceptionMsg);
 
-        Timeout<Integer> timeout = Timeout.of(Duration.ofSeconds(1));
+        Timeout<String> timeout = Timeout.of(Duration.ofMillis(100));
         timeout.withCancel(true);
-        timeout.onFailure(e -> System.err.println("Backing out after 1 second"));
+        timeout.onFailure(printTimeoutExceededExceptionMsg);
+        
+        Fallback<String> fallback = Fallback.of(FALLBACK_VALUE);
 
-        Integer val = Failsafe.with(retryPolicy, timeout).get(service::mockBehaviorForTimeoutPolicy);
-        System.out.println("Value : " + val);
+        String actualValue = Failsafe.with(fallback, retryPolicy, timeout).get(mockService::mockBehavior);
+        assertThat(actualValue).isEqualTo(FALLBACK_VALUE);
+//        assertThat(actualValue).isEqualTo(EXPECTED_VALUE);
     }
 }
