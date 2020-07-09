@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import demo.failsafe.mockservice.MockService;
 import net.jodah.failsafe.Failsafe;
@@ -23,15 +25,17 @@ import net.jodah.failsafe.function.CheckedConsumer;
 @RunWith(MockitoJUnitRunner.class)
 public class App {
 
+	private static final Logger log = LoggerFactory.getLogger(App.class);
+	
 	private static final String EXPECTED_VALUE = "Expected Value";
 	private static final String FALLBACK_VALUE = "Fallback Value";
 	
 	private final CheckedConsumer<ExecutionAttemptedEvent<String>> printAttemptedCountAndExceptionMsg = e -> {
-		System.err.println("Timeout Demo Attempt : " + e.getAttemptCount());
+		log.info("Timeout Demo Attempt : {}", e.getAttemptCount());
 	}; 
 	
 	private final CheckedConsumer<ExecutionCompletedEvent<String>> printTimeoutExceededExceptionMsg = e -> {
-		System.err.println("Timed out with Exception : " + e.getFailure());
+		log.info("Timed out with TimeoutExceededException");
 	};
 	
 	@Mock

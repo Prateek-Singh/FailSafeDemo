@@ -13,6 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import demo.failsafe.mockservice.MockService;
 import net.jodah.failsafe.CircuitBreaker;
@@ -26,9 +28,11 @@ import net.jodah.failsafe.function.CheckedRunnable;
 @RunWith(MockitoJUnitRunner.class)
 public class App {
 	
-	private static final CheckedRunnable printBreakerIsOpen = () -> System.out.println("Breaker is Open now");
-	private static final CheckedRunnable printBreakerIsClosed = () -> System.out.println("Breaker is Closed now");
-	private static final CheckedRunnable printBreakerIsHalfOpen = () -> System.out.println("Breaker is HalfOpen now");
+	private static final Logger log = LoggerFactory.getLogger(App.class);
+	
+	private static final CheckedRunnable printBreakerIsOpen = () -> log.info("Breaker is Open now");
+	private static final CheckedRunnable printBreakerIsClosed = () -> log.info("Breaker is Closed now");
+	private static final CheckedRunnable printBreakerIsHalfOpen = () -> log.info("Breaker is HalfOpen now");
 
 	private static final String EXCEPTION_MSG = "Can't access the Resource at the moment";
 	private static final String EXPECTED_UUID = UUID.randomUUID().toString();
@@ -41,11 +45,11 @@ public class App {
 	CircuitBreaker<String> breaker;
 	
 	private final CheckedConsumer<ExecutionAttemptedEvent<String>> printAttemptMsg = e -> {
-		System.out.println("Attempt " + e.getAttemptCount() + " failed, Breaker state now : " + breaker.getState());
+		log.info("Attempt " + e.getAttemptCount() + " failed, Breaker state now : " + breaker.getState());
 	};
 	
 	private final CheckedConsumer<ExecutionCompletedEvent<String>> printSuccesstMsg = e -> {
-		System.out.println("Attempt " + e.getAttemptCount() + " Succeeded, Breaker state now : " + breaker.getState());
+		log.info("Attempt " + e.getAttemptCount() + " Succeeded, Breaker state now : " + breaker.getState());
 	};
 	
 	@Before
@@ -83,7 +87,7 @@ public class App {
 		retryPolicy.onSuccess(printSuccesstMsg);
 
 		for(int idx = 0; idx < 7; idx++) {
-			System.out.println("Breaker State before the call : " + breaker.getState() + " for : " + idx);
+			log.info("Breaker State before the call : " + breaker.getState() + " for : " + idx);
 			String actualUUID = Failsafe.with(retryPolicy, breaker).get(mockService::mockBehavior);
 			assertThat(actualUUID).isEqualTo(EXPECTED_UUID);
 		}

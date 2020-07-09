@@ -13,6 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import demo.failsafe.mockservice.MockService;
 import net.jodah.failsafe.Failsafe;
@@ -24,17 +26,19 @@ import net.jodah.failsafe.function.CheckedConsumer;
 @RunWith(MockitoJUnitRunner.class)
 public class App {
 	
+	private static final Logger log = LoggerFactory.getLogger(App.class);
+	
 	private static final String EXCEPTION_MSG = "Can't access the Resource at the moment";
 	private static final String UNSUPPORTED_EXCEPTION_MSG = "Can't support this operation";
 
 	private static final String EXPECTED_VALUE = "Expected Value";
 	
 	private final CheckedConsumer<ExecutionAttemptedEvent<String>> printAttemptedCountAndExceptionMsg = e -> {
-		System.err.println("Retry Demo Exception : " + e.getLastFailure().getMessage() + ", Attempt : " + e.getAttemptCount());
+		log.info("Retry Demo Exception : " + e.getLastFailure().getMessage() + ", Attempt : " + e.getAttemptCount());
 	}; 
 	
 	private final CheckedConsumer<ExecutionCompletedEvent<String>> printFailedExceptionMsg = e -> {
-		System.err.println("Failed Exception : " + e.getFailure().getMessage());
+		log.info("Failed Exception : " + e.getFailure().getMessage());
 	}; 
 	
 	@Mock
